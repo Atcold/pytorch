@@ -74,6 +74,26 @@ def get_new_workflow_jobs():
                         "requires": ["macos-12-py3-x86-64-build"]
                     }
                 )
+            }),
+            OrderedDict(
+            {
+                "mac_build": OrderedDict(
+                    {
+                        "name": "macos-12-py3-x86-64-lite-interpreter-build-test",
+                        "build-environment": "macos-12-py3-lite-interpreter-x86-64",
+                        "xcode-version": quote("13.3.1"),
+                    }
+                )
+            }),
+            OrderedDict(
+            {
+                "mac_build": OrderedDict(
+                    {
+                        "name": "macos-12-py3-arm64-build",
+                        "build-environment": "macos-12-py3-arm64",
+                        "xcode-version": quote("13.3.1"),
+                    }
+                )
             })
             ]
 

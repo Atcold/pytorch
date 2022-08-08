@@ -1417,4 +1417,12 @@ workflows:
           num-test-shards: "2"
           requires:
             - macos-12-py3-x86-64-build
+      - mac_build:
+          name: macos-12-py3-x86-64-lite-interpreter-build-test
+          build-environment: macos-12-py3-lite-interpreter-x86-64
+          xcode-version: "13.3.1"
+      - mac_build:
+          name: macos-12-py3-arm64-build
+          build-environment: macos-12-py3-arm64
+          xcode-version: "13.3.1"
     when: << pipeline.parameters.run_build >>
