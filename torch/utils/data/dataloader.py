@@ -321,6 +321,10 @@ class DataLoader(Generic[T_co]):
                     "DataLoader with IterableDataset: expected unspecified "
                     "batch_sampler option, but got batch_sampler={}".format(batch_sampler))
         else:
+            if isinstance(dataset, MapDataPipe):
+                if shuffle is not None:
+                    dataset = torch.utils.data.graph_settings.apply_shuffle_settings(dataset, shuffle=shuffle)
+                shuffle = False
             shuffle = bool(shuffle)
             self._dataset_kind = _DatasetKind.Map
 
@@ -566,7 +570,7 @@ class DataLoader(Generic[T_co]):
                 cpuset_checked))
 
     def _get_shared_seed(self):
-        if isinstance(self.dataset, IterDataPipe):
+        if isinstance(self.dataset, (MapDataPipe, IterDataPipe)):
             _shared_seed = torch.empty((), dtype=torch.int64).random_(generator=self.generator).item()
             if dist.is_available() and dist.is_initialized():
                 rank = dist.get_rank()
@@ -621,7 +625,7 @@ class _BaseDataLoaderIter(object):
     def __init__(self, loader: DataLoader) -> None:
         self._dataset = loader.dataset
         self._shared_seed = loader._get_shared_seed()
-        if isinstance(self._dataset, IterDataPipe):
+        if isinstance(self._dataset, (MapDataPipe, IterDataPipe)):
             shared_rng = torch.Generator()
             shared_rng.manual_seed(self._shared_seed)
             self._dataset = torch.utils.data.graph_settings.apply_shuffle_seed(self._dataset, shared_rng)
