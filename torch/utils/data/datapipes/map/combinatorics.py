@@ -1,5 +1,6 @@
 import random
 
+import torch
 from torch.utils.data.datapipes._decorator import functional_datapipe
 from torch.utils.data.datapipes.datapipe import MapDataPipe
 from typing import Iterator, List, Optional, TypeVar
@@ -45,15 +46,37 @@ class ShufflerMapDataPipe(MapDataPipe[T_co]):
         self.datapipe = datapipe
         self.indices = list(range(len(datapipe))) if indices is None else indices
         self.index_map = {index_name: num_index for num_index, index_name in enumerate(self.indices)}
-        # We do not lazily shuffle because this way is significantly faster in terms of total time
-        random.shuffle(self.indices)
+        self._enabled: bool = True
+        self._seed: Optional[int] = None
+        self._rng = random.Random()
+        self._reset: bool = True
+        self.shuffled_indices: Optional[List] = None
+
+    def set_shuffle(self, shuffle=True):
+        self._enabled = shuffle
+        return self
+
+    def set_seed(self, seed: int):
+        self._seed = seed
+        self._reset = True
+        return self
 
     def __getitem__(self, index) -> T_co:
         try:
             old_numeric_index = self.index_map[index]
         except KeyError:
             raise IndexError(f"Index {index} is out of range for {self}.")
-        new_index = self.indices[old_numeric_index]
+
+        if self._enabled:
+            if self._reset:
+                if self._seed is None:
+                    self._seed = int(torch.empty((), dtype=torch.int64).random_().item())
+                self._rng.seed(self._seed)
+                self.shuffled_indices = self._rng.sample(self.indices, len(self.indices))
+                self._reset = False
+            new_index = self.shuffled_indices[old_numeric_index]  # type: ignore[index]
+        else:
+            new_index = self.indices[old_numeric_index]
         return self.datapipe[new_index]
 
     # Without __iter__ implemented, by default it tries to use 0-index,
