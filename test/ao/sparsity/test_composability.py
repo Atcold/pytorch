@@ -261,8 +261,8 @@ class TestComposability(TestCase):
         # check that correct observers were inserted and that matching
         # occured successfully
         self.assertTrue(hasattr(mod[5], "activation_post_process"))
-        self.assertTrue(isinstance(mod[5], torch.nn.qat.Linear))
-        _squash_mask_calibrate_and_convert(
+        self.assertTrue(isinstance(mod[5], torch.ao.nn.qat.Linear))
+        self._squash_mask_calibrate_and_convert(
             mod, sparsifier, torch.randn(1, 4, 4, 4)
         )
         # check that final module is the expected quantized module and that the model runs
@@ -300,7 +300,7 @@ class TestComposability(TestCase):
         # check that correct observers were inserted and that matching
         # occured successfully
         self.assertTrue(hasattr(mod[5], "activation_post_process"))
-        self.assertTrue(isinstance(mod[5], torch.nn.qat.Linear))
+        self.assertTrue(isinstance(mod[5], torch.ao.nn.qat.Linear))
 
         _squash_mask_calibrate_and_convert(
             mod, sparsifier, torch.randn(1, 4, 4, 4)
