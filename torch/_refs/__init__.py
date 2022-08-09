@@ -233,6 +233,7 @@ __all__ = [
     "empty",
     "empty_like",
     "empty_strided",
+    "eye",
     "full",
     "full_like",
     "ones",
@@ -3550,6 +3551,49 @@ def empty_strided(
         device=device,
         requires_grad=requires_grad,
     )
+
+
+# TODO: support layout, pin_memory
+@register_decomposition(torch.ops.aten.eye)
+@out_wrapper()
+def eye(
+    n: int,
+    m: Optional[int] = None,
+    *,
+    dtype: Optional[torch.dtype] = None,
+    layout: torch.layout = torch.strided,
+    device: Optional[torch.device] = None,
+    pin_memory: bool = False,
+    requires_grad: bool = False,
+) -> TensorLikeType:
+    """
+    Reference implementation of torch.eye
+    """
+    if m is None:
+        m = n
+
+    check(n >= 0, lambda: f"n must be greater or equal to 0, got {n}")
+    check(m >= 0, lambda: f"m must be greater or equal to 0, got {m}")
+
+    # generate square eye
+    min_size = min(n, m)
+    diff = builtins.abs(n - m)
+    ones = torch.ones(min_size, dtype=dtype, device=device, requires_grad=False)
+    eye = torch.diag_embed(ones)
+
+    # add padding for the (n, m) case
+    if n < m:
+        pad_shape = (min_size, diff)
+        dim = -1
+    else:
+        pad_shape = (diff, min_size)
+        dim = -2
+
+    zeros = torch.zeros(
+        pad_shape, dtype=dtype, device=device, requires_grad=requires_grad
+    )
+
+    return torch.cat((eye, zeros), dim=dim)
 
 
 # TODO: missing kwargs (e.g. layout)
