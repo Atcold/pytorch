@@ -579,12 +579,23 @@ jobs:
         type: string
         default: "13.3.1"
         description: What xcode version to build with.
+      build-generates-artifacts:
+        type: boolean
+        default: true
+        description: if the build generates build artifacts
     macos:
       xcode: << parameters.xcode-version >>
     resource_class: medium
     environment:
       BUILD_ENVIRONMENT: << parameters.build-environment >>
     steps:
+      - when:
+          condition: << parameters.build-generates-artifacts >>
+          steps:
+            - run:
+                name: test
+                command: |
+                  echo "hello"
       - checkout
       - run_brew_for_macos_build
 
@@ -633,11 +644,14 @@ jobs:
             echo "export CMAKE_PREFIX_PATH=${CONDA_PREFIX:-"$(dirname "$(which conda)")/../"}" >> "${BASH_ENV}"
             .jenkins/pytorch/macos-build.sh
 
-      - run:
-          name: Archive artifacts into zip
-          command: |
-            zip -1 -r artifacts.zip dist/ build/.ninja_log build/compile_commands.json .pytorch-test-times.json
-            cp artifacts.zip /Users/distiller/workspace
+      - when:
+          condition: << parameters.build-generates-artifacts >>
+          steps:
+            - run:
+                name: Archive artifacts into zip
+                command: |
+                  zip -1 -r artifacts.zip dist/ build/.ninja_log build/compile_commands.json .pytorch-test-times.json
+                  cp artifacts.zip /Users/distiller/workspace
 
       - persist_to_workspace:
           root: /Users/distiller/workspace/
