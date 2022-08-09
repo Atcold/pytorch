@@ -53,29 +53,30 @@ WORKFLOW_DATA = [
 
 
 def get_new_workflow_jobs():
-    return [OrderedDict(
-        {
-            "mac_build": OrderedDict(
-                {
-                    "name": "macos-12-py3-x86-64-build",
-                    "build-environment": "macos-12-py3-x86-64",
-                    "xcode-version": quote("13.3.1"),
-                }
-            )}),
-            OrderedDict(
-            {
-                "mac_test": OrderedDict(
-                    {
-                        "name": "macos-12-py3-x86-64-test",
-                        "build-environment": "macos-12-py3-x86-64",
-                        "xcode-version": quote("13.3.1"),
-                        "shard-number": quote("1"),
-                        "num-test-shards": quote("2"),
-                        "requires": ["macos-12-py3-x86-64-build"]
-                    }
-                )
-            }),
-            OrderedDict(
+    return [
+        # OrderedDict(
+        # {
+        # "mac_build": OrderedDict(
+        #     {
+        #         "name": "macos-12-py3-x86-64-build",
+        #         "build-environment": "macos-12-py3-x86-64",
+        #         "xcode-version": quote("13.3.1"),
+        #     }
+        # )}),
+        # OrderedDict(
+        # {
+        #     "mac_test": OrderedDict(
+        #         {
+        #             "name": "macos-12-py3-x86-64-test",
+        #             "build-environment": "macos-12-py3-x86-64",
+        #             "xcode-version": quote("13.3.1"),
+        #             "shard-number": quote("1"),
+        #             "num-test-shards": quote("2"),
+        #             "requires": ["macos-12-py3-x86-64-build"]
+        #         }
+        #     )
+        # }),
+        OrderedDict(
             {
                 "mac_build": OrderedDict(
                     {
@@ -85,17 +86,17 @@ def get_new_workflow_jobs():
                     }
                 )
             }),
-            OrderedDict(
-            {
-                "mac_build": OrderedDict(
-                    {
-                        "name": "macos-12-py3-arm64-build",
-                        "build-environment": "macos-12-py3-arm64",
-                        "xcode-version": quote("13.3.1"),
-                    }
-                )
-            })
-            ]
+        # OrderedDict(
+        # {
+        #     "mac_build": OrderedDict(
+        #         {
+        #             "name": "macos-12-py3-arm64-build",
+        #             "build-environment": "macos-12-py3-arm64",
+        #             "xcode-version": quote("13.3.1"),
+        #         }
+        #     )
+        # })
+    ]
 
 
 def get_workflow_jobs():

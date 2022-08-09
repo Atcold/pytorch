@@ -611,6 +611,9 @@ jobs:
           command: |
             set -x
 
+            git submodule sync --recursive
+            git submodule update --init --recursive
+
             export PATH="/usr/local/bin:$PATH"
             export WORKSPACE_DIR="${HOME}/workspace"
             mkdir -p "${WORKSPACE_DIR}"
@@ -676,6 +679,10 @@ jobs:
           no_output_timeout: "1h"
           command: |
             set -x
+
+            git submodule sync --recursive
+            git submodule update --init --recursive
+
             mv ~/workspace/artifacts.zip .
             unzip artifacts.zip
 
@@ -1406,23 +1413,7 @@ workflows:
               only:
                 - postnightly
       - mac_build:
-          name: macos-12-py3-x86-64-build
-          build-environment: macos-12-py3-x86-64
-          xcode-version: "13.3.1"
-      - mac_test:
-          name: macos-12-py3-x86-64-test
-          build-environment: macos-12-py3-x86-64
-          xcode-version: "13.3.1"
-          shard-number: "1"
-          num-test-shards: "2"
-          requires:
-            - macos-12-py3-x86-64-build
-      - mac_build:
           name: macos-12-py3-x86-64-lite-interpreter-build-test
           build-environment: macos-12-py3-lite-interpreter-x86-64
-          xcode-version: "13.3.1"
-      - mac_build:
-          name: macos-12-py3-arm64-build
-          build-environment: macos-12-py3-arm64
           xcode-version: "13.3.1"
     when: << pipeline.parameters.run_build >>

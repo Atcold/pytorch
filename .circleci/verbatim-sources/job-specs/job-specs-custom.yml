@@ -136,6 +136,9 @@
           command: |
             set -x
 
+            git submodule sync --recursive
+            git submodule update --init --recursive
+
             export PATH="/usr/local/bin:$PATH"
             export WORKSPACE_DIR="${HOME}/workspace"
             mkdir -p "${WORKSPACE_DIR}"
@@ -201,6 +204,10 @@
           no_output_timeout: "1h"
           command: |
             set -x
+
+            git submodule sync --recursive
+            git submodule update --init --recursive
+
             mv ~/workspace/artifacts.zip .
             unzip artifacts.zip
 
