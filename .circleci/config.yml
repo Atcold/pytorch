@@ -589,13 +589,6 @@ jobs:
     environment:
       BUILD_ENVIRONMENT: << parameters.build-environment >>
     steps:
-      - when:
-          condition: << parameters.build-generates-artifacts >>
-          steps:
-            - run:
-                name: test
-                command: |
-                  echo "hello"
       - checkout
       - run_brew_for_macos_build
 
@@ -1430,4 +1423,5 @@ workflows:
           name: macos-12-py3-x86-64-lite-interpreter-build-test
           build-environment: macos-12-py3-lite-interpreter-x86-64
           xcode-version: "13.3.1"
+          build-generates-artifacts: false
     when: << pipeline.parameters.run_build >>

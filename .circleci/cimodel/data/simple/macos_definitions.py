@@ -83,6 +83,7 @@ def get_new_workflow_jobs():
                         "name": "macos-12-py3-x86-64-lite-interpreter-build-test",
                         "build-environment": "macos-12-py3-lite-interpreter-x86-64",
                         "xcode-version": quote("13.3.1"),
+                        "build-generates-artifacts": "false"
                     }
                 )
             }),

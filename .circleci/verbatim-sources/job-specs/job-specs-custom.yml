@@ -114,13 +114,6 @@
     environment:
       BUILD_ENVIRONMENT: << parameters.build-environment >>
     steps:
-      - when:
-          condition: << parameters.build-generates-artifacts >>
-          steps:
-            - run:
-                name: test
-                command: |
-                  echo "hello"
       - checkout
       - run_brew_for_macos_build
 
