@@ -5647,7 +5647,7 @@ def sample_inputs_diagonal_diag_embed(op_info, device, dtype, requires_grad, **k
     for shape, kwarg in chain(product(shapes_2d, kwargs_2d), product(shapes_3d, kwargs_3d)):
         yield SampleInput(make_arg(shape), kwargs=kwarg)
 
-def reference_inputs_diagonal(op_info, device, dtype, requires_grad, **kwargs):
+def reference_inputs_diagonal_diag_embed(op_info, device, dtype, requires_grad, **kwargs):
     yield from sample_inputs_diagonal_diag_embed(
         op_info, device, dtype, requires_grad, **kwargs)
 
@@ -5662,8 +5662,9 @@ def reference_inputs_diagonal(op_info, device, dtype, requires_grad, **kwargs):
         dict(dim1=1, dim2=0),
         # negative dims are allowed
         dict(dim1=-2, dim2=-1),
-        # out of bounds offset should return an empty tensor
-        dict(offset=10000),
+        # out of bounds offset should return an empty tensor in diagonal and
+        # offset the diagonal in diag_embed
+        dict(offset=100),
     )
 
     kwargs3d = kwargs2d + (
@@ -5677,7 +5678,7 @@ def reference_inputs_diagonal(op_info, device, dtype, requires_grad, **kwargs):
     for shape, kwargs in chain(samples2d, samples3d):
         yield SampleInput(input=make_arg(shape), kwargs=kwargs)
 
-def error_inputs_diagonal(op_info, device, **kwargs):
+def error_inputs_diagonal_diag_embed(op_info, device, **kwargs):
     make_arg = partial(make_tensor, device=device, dtype=torch.float32)
 
     shapes2d = ((M, L),)
@@ -5702,7 +5703,14 @@ def error_inputs_diagonal(op_info, device, **kwargs):
 
         dim1 = kwargs.get('dim1')
         dim2 = kwargs.get('dim2')
-        num_dim = arg.dim()
+
+        if op_info.name in ('diagonal', '_refs.diagonal'):
+            num_dim = arg.dim()
+        elif op_info.name in ('diag_embed', '_refs.diag_embed'):
+            num_dim = arg.dim() + 1
+        else:
+            raise RuntimeError("should be unreachable")
+
         bound1 = -num_dim
         bound2 = num_dim - 1
         dim_range = range(bound1, bound2 + 1)
@@ -9816,7 +9824,9 @@ op_db: List[OpInfo] = [
            gradcheck_fast_mode=True,
            supports_forward_ad=True,
            supports_fwgrad_bwgrad=True,
-           sample_inputs_func=sample_inputs_diagonal_diag_embed),
+           sample_inputs_func=sample_inputs_diagonal_diag_embed,
+           reference_inputs_func=reference_inputs_diagonal_diag_embed,
+           error_inputs_func=error_inputs_diagonal_diag_embed),
     OpInfo('diagonal',
            # They are not strictly aliases as they have diverging defaults, but we can see them as aliases for testing purposes
            # If we add tests that test the function against the alias, make linalg.diagonal into its own OpInfo
@@ -9827,8 +9837,8 @@ op_db: List[OpInfo] = [
            supports_forward_ad=True,
            supports_fwgrad_bwgrad=True,
            sample_inputs_func=sample_inputs_diagonal_diag_embed,
-           reference_inputs_func=reference_inputs_diagonal,
-           error_inputs_func=error_inputs_diagonal),
+           reference_inputs_func=reference_inputs_diagonal_diag_embed,
+           error_inputs_func=error_inputs_diagonal_diag_embed),
     OpInfo('diagonal_scatter',
            dtypes=all_types_and(torch.bool, torch.bfloat16, torch.float16),
            supports_out=False,
@@ -19465,6 +19475,11 @@ python_ref_db = [
     PythonRefInfo(
         "_refs.diagonal",
         torch_opinfo_name="diagonal",
+        supports_nvfuser=False,
+    ),
+    PythonRefInfo(
+        "_refs.diag_embed",
+        torch_opinfo_name="diag_embed",
         supports_nvfuser=False,
     ),
     PythonRefInfo(
