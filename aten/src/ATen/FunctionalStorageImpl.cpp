@@ -1,5 +1,6 @@
 #include <ATen/FunctionalStorageImpl.h>
 
+#include <ATen/EmptyTensor.h>
 #include <ATen/FunctionalTensorWrapper.h>
 #include <ATen/core/LegacyTypeDispatch.h>
 #include <c10/util/Exception.h>
@@ -92,7 +93,7 @@ bool Alias::apply_updates() {
 FunctionalStorageImpl::FunctionalStorageImpl(const Tensor& value)
   : c10::StorageImpl(
       c10::StorageImpl::use_byte_size_t(),
-      value.numel() * value.dtype().itemsize(),
+      at::detail::computeStorageNbytesSymInt(value.sym_sizes(), value.sym_strides(), value.dtype().itemsize(), value.storage_offset()),
       DataPtr{nullptr, value.device()},
       // Using a null allocator, since FunctionalTensorImpl's aren't resizeable.
       nullptr,
