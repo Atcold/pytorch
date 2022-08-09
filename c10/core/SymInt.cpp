@@ -37,10 +37,19 @@ c10::SymInt SymInt::toSymInt(SymIntNode sin_sp) {
 }
 
 SymInt SymInt::operator+(SymInt sci) const {
-  TORCH_CHECK(
-      !this->is_symbolic() && !sci.is_symbolic(),
-      "Symbolic Add isn't supported yet");
-  return SymInt(data_ + sci.data_);
+  if (!is_symbolic() && !sci.is_symbolic()) {
+    return SymInt(data_ + sci.data_);
+  }
+  auto res = normalize_symints(*this, sci);
+  return SymInt::toSymInt(res[0]->add(res[1]));
+}
+
+SymInt SymInt::operator-(SymInt sci) const {
+  if (!is_symbolic() && !sci.is_symbolic()) {
+    return SymInt(data_ - sci.data_);
+  }
+  auto res = normalize_symints(*this, sci);
+  return SymInt::toSymInt(res[0]->sub(res[1]));
 }
 
 SymInt SymInt::operator-(SymInt sci) const {
